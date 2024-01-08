@@ -1,1 +1,2 @@
-# sonny-bot
+# Sonny-Bot
+Sonny Bot is a Discord bot companion for football enthusiasts! The bot scrapes transfermarkt.us to produce comprehensive player and club data from 30+ official leagues worlwide, providing football fans a one-stop solution for all their football information needs.
