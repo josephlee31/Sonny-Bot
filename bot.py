@@ -62,7 +62,7 @@ async def get_player(ctx, *, command_args=''):
 
     # Case 3: More than one result
     else:
-        embed = embeds.resulting_players(df, command_args)
+        embed = embeds.resulting_players_embed(df, command_args)
         await ctx.send(embed=embed)
 
         # Await for user's response
@@ -124,7 +124,7 @@ async def get_club(ctx, *, command_args=''):
 
     # Case 3: More than one result
     else:
-        embed = embeds.possible_clubs_embed(df, command_args)
+        embed = embeds.resulting_clubs_embed(df, command_args)
         await ctx.send(embed=embed)
 
         # Await for user's response

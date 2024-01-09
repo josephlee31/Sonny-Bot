@@ -12,6 +12,14 @@ def embed_setup(r, g, b):
     )
     return embed
 
+# Below is a function to produce a simple embed with a title and message.
+def simple_embed(title, msg):
+    embed = embed_setup(255, 255, 255)
+    embed.add_field(name=title, value=msg, inline=True)
+    
+    embed.timestamp = datetime.now()
+    return embed
+
 # Below is a function to produce an embed for the !help command.
 def command_help():
     embed = embed_setup(255, 255, 255)
@@ -21,7 +29,7 @@ def command_help():
     return embed
 
 # Below is a function to produce an embed, displaying all resulting players upon searching.
-def resulting_players(df, player_name):
+def resulting_players_embed(df, player_name):
     embed = embed_setup(255, 255, 255)
     embed.set_author(
         name = f"Multiple players found with the name '{player_name}'. Please type the command [index] to select your player. \n")
@@ -47,7 +55,8 @@ def resulting_players(df, player_name):
     embed.set_footer(text=transfermarkt_footer)
     return embed
 
-def possible_clubs_embed(df, club_name):
+# Below is a function to produce an embed, displaying all resulting clubs upon searching.
+def resulting_clubs_embed(df, club_name):
     embed = embed_setup(255, 255, 255)
     embed.set_author(
         name = f"Multiple clubs found with the name '{club_name}'. Please type the command [index] to select your club. \n")
@@ -68,13 +77,7 @@ def possible_clubs_embed(df, club_name):
     embed.set_footer(text=transfermarkt_footer)
     return embed
 
-def simple_embed(title, msg):
-    embed = embed_setup(255, 255, 255)
-    embed.add_field(name=title, value=msg, inline=True)
-    
-    embed.timestamp = datetime.now()
-    return embed
-
+# Below is a function to display overall player information.
 def display_player(player_data, player_stats_json, player_rumors):
     
     # Set up embed
@@ -170,6 +173,7 @@ def display_outfield(club, player_stats_json, embed):
         pass
     return embed
 
+# Below is a function to display overall team information.
 def display_club(club_info, df):
     embed = embed_setup(255, 255, 255)
     embed.set_author(name = f"⚽{club_info['name']} (2023-24 Stats)")

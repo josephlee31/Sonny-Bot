@@ -9,10 +9,8 @@ import config
 # Below function converts command argument into searchable transfermarkt query.
 def search_player(command_args):
     """
-    Arguments:
-        - command_args (str): Name of player that the user wishes to search
-    Returns:
-        - results_df (df): pandas df of resulting player name, age, club, position, and link
+    Arguments: command_args (str): Name of player that the user wishes to search
+    Returns: results_df (df): pandas df of resulting player name, age, club, position, and link
     """
     # Process command_args string
     name_query = config.tm_search + '+'.join(command_args.split())
@@ -71,9 +69,12 @@ def process_df(df):
 # Below is a function used to retrieve player stats and rumors from TransferMarkt's API.
 def get_stats(p_info):
     """
-    Arguments:
-        - player_info (dict): Dictionary of player name, club, and TransferMarkt URL
+    Arguments: 
+        - p_info (dict): Dictionary of player name, club, and TransferMarkt URL
     Returns:
+        - p_info (dict): Updated dictionary of player info
+        - player_stats_json (json) --> json file containing player's season stats
+        - player_rumors_embeds (dict) --> dictionary of player's transfer rumors
     """
 
     # Retrieve player's TransferMarkt URL and ID
