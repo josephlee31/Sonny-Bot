@@ -76,8 +76,12 @@ async def get_player(ctx, *, command_args=''):
             selected_index = int(response.content)-1
 
             # Process the selected player
-            selected_df = df.iloc[[selected_index]]
-            selected_df = selected_df.reset_index(drop=True)
+            try:
+                selected_df = df.iloc[[selected_index]]
+                selected_df = selected_df.reset_index(drop=True)
+            except IndexError:
+                msg = "Incorrect response entered. Please try the command again."
+                await ctx.send(embed=embeds.simple_embed('Error', msg))
 
             # Process info such as Active/Inactive, Name, Link, etc.
             await ctx.send(embed=process_and_display_df(selected_df))
@@ -90,9 +94,9 @@ async def get_player(ctx, *, command_args=''):
             msg = "Incorrect response entered. Please try the command again."
             await ctx.send(embed=embeds.simple_embed('Error', msg))
 
-        finally:
-            # Delete the previous message
-            await response.delete()
+        # finally:
+        #     # Delete the previous message
+        #     await response.delete()
 
 # !club command to retrieve club statistics from a particular season. (ex. !club Manchester United)
 @client.command(name='club')
