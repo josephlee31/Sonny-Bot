@@ -16,11 +16,9 @@ By using the command `!player [player_name]`, such as `!player Erling Haaland`, 
 * Transfer Rumors around the Player
 * ... and more!
   
-<p float="left">
-  <img src="images/command_1.png" width="30.7%" height="30.7%" />
-  <img src="images/command_2.png" width="31.9%" height="31.9%" />
-  <img src="images/command_4.png" width="30%" height="30%" />
-</p>
+<img src="images/command_1.png" width="60%" height="60%" />
+<img src="images/command_2.png" width="60%" height="60%" />
+<img src="images/command_4.png" width="60%" height="60%" />
 
 Sonny Bot can also show information for players who are currently without a contract: 
 <img src="images/command_3.png" width="40%" height="40%" />
