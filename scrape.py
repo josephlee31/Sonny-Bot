@@ -89,8 +89,9 @@ def get_stats(p_info):
                                     {'class': 'data-header__profile-image'}).get('src')
 
     # Retrieve player position
-    p_info['position'] = soup.find_all('span',
-                                       {'class': 'data-header__content'})[7].get_text(strip=True)
+    for label in soup.find_all('li', {'class': 'data-header__label'}):
+        if label.get_text(strip=True).startswith('Position:'):
+            p_info['position'] = label.get_text(strip=True).replace('Position:', '')
 
     # Get player stats (Injury, International Calls)
     try:
