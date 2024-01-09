@@ -6,7 +6,6 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-import config
 import embeds
 import scrape
 
@@ -50,17 +49,17 @@ async def get_player(ctx, *, command_args=''):
         player_info, player_stats_json, player_rumors = scrape.process_df(df)
         embed = embeds.display_player(player_info, player_stats_json, player_rumors)
         return embed
-        
+
     # Case 1: No results
     if df.shape[0] == 0:
-        msg = "The provided player name is invalid or does not exist. Please enter a valid player name."
+        msg = "The player name is invalid or does not exist. Please enter a valid name."
         await ctx.send(embed=embeds.simple_embed('Error', msg))
-    
+
     # Case 2: One result
     elif df.shape[0] == 1:
         # Process info such as Active/Inactive, Name, Link, etc.
         await ctx.send(embed=process_and_display_df(df))
-    
+
     # Case 3: More than one result
     else:
         embed = embeds.resulting_players(df, command_args)
@@ -82,15 +81,15 @@ async def get_player(ctx, *, command_args=''):
 
             # Process info such as Active/Inactive, Name, Link, etc.
             await ctx.send(embed=process_and_display_df(selected_df))
-        
+
         except asyncio.TimeoutError:
             msg = "Time limit exceeded. Please try the command again."
             await ctx.send(embed=embeds.simple_embed('Error', msg))
-        
+
         except ValueError:
             msg = "Incorrect response entered. Please try the command again."
             await ctx.send(embed=embeds.simple_embed('Error', msg))
-        
+
         finally:
             # Delete the previous message
             await response.delete()
@@ -113,7 +112,7 @@ async def get_club(ctx, *, command_args=''):
     if df.shape[0] == 0:
         msg = "The provided club name is invalid or does not exist. Please enter a valid club name."
         await ctx.send(embed=embeds.simple_embed('Error', msg))
-    
+
     # Case 2: One result
     elif df.shape[0] == 1:
         # Below is where club information will be scraped, and output using embed
@@ -127,7 +126,7 @@ async def get_club(ctx, *, command_args=''):
         # Await for user's response
         def check_input(message):
             return message.author == ctx.author and message.channel == ctx.channel
-        
+
         try:
             response = await client.wait_for('message', timeout=30, check=check_input)
 
@@ -140,20 +139,18 @@ async def get_club(ctx, *, command_args=''):
 
             # Below is where club information will be scraped, and output using embed
             await ctx.send(embed=process_and_display_df_clubs(df))
-        
+
         except asyncio.TimeoutError:
             msg = "Time limit exceeded. Please try the command again."
             await ctx.send(embed=embeds.simple_embed('Error', msg))
-        
+
         except ValueError:
             msg = "Incorrect response entered. Please try the command again."
             await ctx.send(embed=embeds.simple_embed('Error', msg))
-        
+
         finally:
             # Delete the previous message
             await response.delete()
 
 # Run Discord Bot
 client.run(TOKEN)
-
-

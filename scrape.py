@@ -1,20 +1,17 @@
-import requests
-import time
-
-import pandas as pd
-
-from bs4 import BeautifulSoup
 from datetime import datetime
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 
 import config
 
-# Below function converts command argument into searchable transfermarkt query. 
+# Below function converts command argument into searchable transfermarkt query.
 def search_player(command_args):
     """
     Arguments:
-        command_args (string): Name of player that the user wishes to search
+        command_args (str): Name of player that the user wishes to search
     Returns:
-        results_df (pandas df): Dataframe containing resultant player name, age, club, position, and link
+        results_df (df): pandas df of resulting player name, age, club, position, and link
     """
     # Process command_args string
     name_query = config.transermarkt_query + '+'.join(command_args.split())
@@ -33,7 +30,7 @@ def search_player(command_args):
         if player_info[2].find_all('a'):
             link = str(player_info[2].find_all('a')[0].get('href'))
             name = str(player_info[2].find_all('a')[0].get('title'))
-        
+
             # Confirm we have the information of a "player", not a manager or agent
             if "spieler" in link:
                 # Extract names and Transfermarkt links
@@ -44,7 +41,7 @@ def search_player(command_args):
                 # Check if player is retired
                 if "Retired" in str(player_info[3]):
                     p_clubs.append("Retired")
-                
+
                 else:
                     club = str(player_info[3].find_all('a')[0].get('title'))
                     p_clubs.append(club)
@@ -56,18 +53,23 @@ def search_player(command_args):
                 # Obtain age data
                 age = player_info[6].get_text(strip=True)
                 p_ages.append(age)
-    
+
     # Complete dataframe
-    cols = {'Name': p_names, 'Age': p_ages, 'Club': p_clubs, 'Position': p_positions, 'Link': p_links}
+    cols = {'Name': p_names,
+            'Age': p_ages,
+            'Club': p_clubs,
+            'Position': p_positions,
+            'Link': p_links}
+
     results_df = pd.DataFrame(cols)
 
     # Remove players that are retired, deceased, or unknown
     for status in ['Retired', '---', 'Unknown']:
         results_df = results_df[results_df.Club != status]
-    
+
     # Reset index
     results_df = results_df.reset_index(drop=True)
-    return results_df  
+    return results_df
 
 # Below is a function used to scrape and parse player information
 def process_df(df):
@@ -183,7 +185,6 @@ def process_club(command_args):
     for x in soup.find_all('td', {'class':'hauptlink'}):
         if x.find_all('a'):
             if 'startseite' in x.find_all('a')[0].get('href'):
-                query = x.find_all('a')[0]
                 c_name.append(x.find_all('a')[0].get('title'))
                 c_club_link.append(config.transermarkt_mainpage + x.find_all('a')[0].get('href'))
 
@@ -269,4 +270,3 @@ def process_df_clubs(df):
         club_info['next_match_league'] += f"[{match['competition']['label']}]({match['competition']['link']})\n"
     
     return club_info
-
