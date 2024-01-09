@@ -92,10 +92,10 @@ def display_player(player_data, player_stats_json, player_rumors):
     # 3. Display player statistics for the current season
     # Displayed information is different depending on player position.
     if player_data['position'] == 'Goalkeeper':
-        embed = display_goalkeeper(player_stats_json, embed)
+        embed = display_goalkeeper(player_data['club'], player_stats_json, embed)
 
     else:
-        embed = display_outfield(player_stats_json, embed)
+        embed = display_outfield(player_data['club'], player_stats_json, embed)
     
     # 4. Add player status, and line break
     embed.add_field(name='Availability Status', value=player_data['status'], inline=False)
@@ -117,7 +117,7 @@ def display_player(player_data, player_stats_json, player_rumors):
     return embed
 
 # Below is a function to display goalkeeper performance metrics.
-def display_goalkeeper(player_stats_json, embed):
+def display_goalkeeper(club, player_stats_json, embed):
     
     # Initialize strings for display
     pl_tournament, pl_apps, pl_conc_goals = "", "", ""
@@ -135,13 +135,16 @@ def display_goalkeeper(player_stats_json, embed):
             pl_conc_goals += f"{tournament['concededGoals']}\n"
     
     # Set-up embed
-    embed.add_field(name='Tournament', value=pl_tournament, inline=True)
-    embed.add_field(name='Apps (CS)', value=pl_apps, inline=True)
-    embed.add_field(name='Gls. Conceded', value=pl_conc_goals, inline=True)
+    if club != 'Without Club':
+        embed.add_field(name='Tournament', value=pl_tournament, inline=True)
+        embed.add_field(name='Apps (CS)', value=pl_apps, inline=True)
+        embed.add_field(name='Gls. Conceded', value=pl_conc_goals, inline=True)
+    else:
+        pass
     return embed
 
 # Below is a function to display defender performance metrics.
-def display_outfield(player_stats_json, embed):
+def display_outfield(club, player_stats_json, embed):
     
     # Initialize strings for display
     pl_tournament, pl_apps, starting_per = "", "", ""
@@ -159,9 +162,12 @@ def display_outfield(player_stats_json, embed):
             starting_per += f"{round(tournament['startElevenPercent'], 2)}\n"
     
     # Set-up embed
-    embed.add_field(name='Tournament', value=pl_tournament, inline=True)
-    embed.add_field(name='Apps (G/A)', value=pl_apps, inline=True)
-    embed.add_field(name='SE (%)', value=starting_per, inline=True)
+    if club != 'Without Club':
+        embed.add_field(name='Tournament', value=pl_tournament, inline=True)
+        embed.add_field(name='Apps (G/A)', value=pl_apps, inline=True)
+        embed.add_field(name='SE (%)', value=starting_per, inline=True)
+    else:
+        pass
     return embed
 
 def display_club(club_info, df):

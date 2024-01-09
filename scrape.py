@@ -4,14 +4,15 @@ import requests
 from bs4 import BeautifulSoup
 
 import config
+import time
 
 # Below function converts command argument into searchable transfermarkt query.
 def search_player(command_args):
     """
     Arguments:
-        command_args (str): Name of player that the user wishes to search
+        - command_args (str): Name of player that the user wishes to search
     Returns:
-        results_df (df): pandas df of resulting player name, age, club, position, and link
+        - results_df (df): pandas df of resulting player name, age, club, position, and link
     """
     # Process command_args string
     name_query = config.tm_search + '+'.join(command_args.split())
@@ -21,7 +22,7 @@ def search_player(command_args):
 
     # Parse through HTML data
     pageTree = requests.get(name_query, headers=config.headers)
-    soup = BeautifulSoup(pageTree.content, 'html.parser')
+    soup = BeautifulSoup(pageTree.content, 'lxml')
 
     for result in soup.find_all('tr', {'class':['even', 'odd']}):
         # Remove managers or trainers from search
@@ -29,42 +30,35 @@ def search_player(command_args):
             # Check if player is retired. If so, not included in list.
             if result.find_all('td')[3].get_text() in ["Retired", "---"]:
                 continue
-            else:
-                p_names.append(result.find_all('td')[2].get_text())
-                p_clubs.append(result.find_all('td')[3].get_text())
-                p_positions.append(result.find_all('td')[4].get_text())
-                p_links.append(result.find_all('a')[1].get('href'))
+            p_names.append(result.find_all('td')[2].get_text())
+            p_clubs.append(result.find_all('td')[3].get_text())
+            p_positions.append(result.find_all('td')[4].get_text())
+            p_links.append(config.tm_main + result.find_all('a')[1].get('href'))
 
     # Complete dataframe
     cols = {'Name': p_names,
             'Club': p_clubs,
             'Position': p_positions,
             'Link': p_links}
-
     results_df = pd.DataFrame(cols)
-
-    # Remove players that are retired, deceased, or unknown
-    for status in ['Retired', '---', 'Unknown']:
-        results_df = results_df[results_df.Club != status]
-
-    # Reset index
-    results_df = results_df.reset_index(drop=True)
     return results_df
 
 # Below is a function used to scrape and parse player information
 def process_df(df):
     """
     Arguments:
-        - df (pandas df) --> Pandas df (single row) with columns Name, Age, Club, Position, Link
+        - df (pandas df) --> Pandas df (single row) with columns Name, Club, Position, Link
+    Returns:
+        - player_info (dict) --> Dictionary version of df
+        - player_stats_json (json) --> Scraped json file of player match stats
+        - player_rumors_json (json) --> Scraped json file of player transfer rumors
     """
     # Initialize an empty dictionary to store info
     player_info = {}
 
     for col in df.columns:
-        if col == 'Link':
-            player_info[col.lower()] = config.tm_main + df.loc[0][col]
         # More specific position information will be retrieved later
-        elif col == 'Position':
+        if col == 'Position':
             pass
         else:
             player_info[col.lower()] = df.loc[0][col]
@@ -74,40 +68,41 @@ def process_df(df):
 
     return player_info, player_stats_json, player_rumors_json
 
-def get_stats(player_info):
-    # Retrieve information from player_info dictionary
-    player_url = player_info['link']
+# Below is a function used to retrieve player stats and rumors from TransferMarkt's API.
+def get_stats(p_info):
+    """
+    Arguments:
+        - player_info (dict): Dictionary of player name, club, and TransferMarkt URL
+    Returns:
+    """
 
-    # Get player Transfermarkt ID
-    player_info['id'] = player_url.split("/")[-1]
+    # Retrieve player's TransferMarkt URL and ID
+    player_url = p_info['link']
+    p_info['id'] = player_url.split("/")[-1]
 
     # Perform the scrape, obtain HTML data in soup
     pageTree = requests.get(player_url, headers=config.headers)
-    soup = BeautifulSoup(pageTree.content, 'html.parser')
+    soup = BeautifulSoup(pageTree.content, 'lxml')
 
     # Retrieve player image URL
-    image_header = soup.find_all('div', {'class': 'data-header__profile-container'})[0]
-    player_info['image_url'] = str(image_header.find_all('img')[0].get('src'))
+    p_info['image_url'] = soup.find('img',
+                                    {'class': 'data-header__profile-image'}).get('src')
 
     # Retrieve player position
-    for x in soup.find_all('li', {'class': 'data-header__label'}):
-        if x.get_text(strip=True).startswith('Position:'):
-            player_info['position'] = x.get_text(strip=True).split(':')[-1]
-            break
-        else:
-            player_info['position'] = 'N/A'
+    p_info['position'] = soup.find_all('span',
+                                       {'class': 'data-header__content'})[7].get_text(strip=True)
 
     # Get player stats (Injury, International Calls)
     try:
-        player_info["status"] = soup.find_all('div', {'class': 'verletzungsbox'})[0].find_all('div', {'class': 'text'})[0].get_text(separator = ': ', strip=True)
+        p_info["status"] = soup.find_all('div', {'class': 'verletzungsbox'})[0].find_all('div', {'class': 'text'})[0].get_text(separator = ': ', strip=True)
     except IndexError:
-        player_info["status"] = "Available"
+        p_info["status"] = "Available"
 
     # Retrieve club page link
-    player_info['clublink'] = soup.find_all('span', {'class': 'data-header__club'})[0].find_all('a')[0].get('href')
+    p_info['clublink'] = soup.find_all('span', {'class': 'data-header__club'})[0].find_all('a')[0].get('href')
 
     # Retrieve player stats
-    stats_link = "https://www.transfermarkt.us/ceapi/player/" + player_info['id'] + "/performance"
+    stats_link = "https://www.transfermarkt.us/ceapi/player/" + p_info['id'] + "/performance"
     response = requests.get(stats_link, headers=config.headers, timeout=1)
 
     # Stats are stored in a .json file
@@ -118,9 +113,9 @@ def get_stats(player_info):
         # Unique case of "AFC Champions League" being two rows long despite being 20 characters
         if tournament['competitionDescription'] == 'AFC Champions League':
             tournament['competitionDescription'] = 'AFC CL'
-        
+
     # Retrieve player transfer rumors
-    rumor_link = 'https://www.transfermarkt.us/ceapi/currentRumors/player/' + player_info['id']
+    rumor_link = 'https://www.transfermarkt.us/ceapi/currentRumors/player/' + p_info['id']
     response = requests.get(rumor_link, headers=config.headers, timeout=1)
     rumors_json = response.json()['rumors']
 
@@ -148,7 +143,7 @@ def get_stats(player_info):
     else:
         player_rumors_embeds = None
         
-    return player_info, player_stats_json, player_rumors_embeds
+    return p_info, player_stats_json, player_rumors_embeds
 
 # Below function converts command argument into searchable transfermarkt query. 
 def process_club(command_args):
