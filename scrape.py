@@ -3,8 +3,8 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
+# Local imports
 import config
-import time
 
 # Below function converts command argument into searchable transfermarkt query.
 def search_player(command_args):
@@ -21,8 +21,8 @@ def search_player(command_args):
     p_names, p_clubs, p_positions, p_links = [], [], [], []
 
     # Parse through HTML data
-    pageTree = requests.get(name_query, headers=config.headers)
-    soup = BeautifulSoup(pageTree.content, 'lxml')
+    page = requests.get(name_query, headers=config.headers)
+    soup = BeautifulSoup(page.content, 'lxml')
 
     for result in soup.find_all('tr', {'class':['even', 'odd']}):
         # Remove managers or trainers from search
@@ -81,8 +81,8 @@ def get_stats(p_info):
     p_info['id'] = player_url.split("/")[-1]
 
     # Perform the scrape, obtain HTML data in soup
-    pageTree = requests.get(player_url, headers=config.headers)
-    soup = BeautifulSoup(pageTree.content, 'lxml')
+    page = requests.get(player_url, headers=config.headers)
+    soup = BeautifulSoup(page.content, 'lxml')
 
     # Retrieve player image URL
     p_info['image_url'] = soup.find('img',
@@ -131,9 +131,10 @@ def get_stats(p_info):
                 pass
             else:
                 player_rumors[club] = rumor['probability']
-        
+
         # Clean up dictionary for embeds otuput
         player_rumors_embeds = {'teams': "", 'probability': ""}
+
         for team in player_rumors:
             player_rumors_embeds['teams'] += f"{team}\n"
             if not player_rumors[team]:
@@ -143,16 +144,20 @@ def get_stats(p_info):
 
     else:
         player_rumors_embeds = None
-        
+
     return p_info, player_stats_json, player_rumors_embeds
 
-# Below function converts command argument into searchable transfermarkt query. 
-def process_club(command_args):
+# Below function converts command argument into searchable transfermarkt query.
+def search_club(command_args):
+    """
+    Arguments: command_args (str) --> Name of the club that the user entered
+    Returns: results_df (pd df) --> df of possible clubs with user-entered name
+    """
     name_query = config.tm_search + '+'.join(command_args.split())
 
     # Perform the scrape, obtain HTML data in soup
-    pageTree = requests.get(name_query, headers=config.headers)
-    soup = BeautifulSoup(pageTree.content, 'html.parser')
+    page = requests.get(name_query, headers=config.headers)
+    soup = BeautifulSoup(page.content, 'lxml')
 
     # Initialize empty lists for creating dataframe
     c_name, c_club_link = [], []
@@ -171,12 +176,16 @@ def process_club(command_args):
     # Remove youth clubs
     for string_to_remove in ['Youth', 'U19', 'U21', 'U18', 'U17', 'Reserves']:
         results_df = results_df[~results_df.Club.str.contains(string_to_remove)]
-    
+
     # Reset index
     results_df = results_df.reset_index(drop=True)
-    return results_df  
+    return results_df
 
 def process_df_clubs(df):
+    """
+    Arguments: df (pd df) --> Single-row pandas dataframe containing selected club
+    Returns: club_info (dict) --> Dictionary containing club information
+    """
     # Initialize an empty dictionary to store info
     club_info = {}
 
@@ -187,8 +196,8 @@ def process_df_clubs(df):
 
     # Perform the scrape, obtain HTML data in soup
     club_info['link'] = club_info['link'].replace('startseite', 'spielplan')
-    pageTree = requests.get(club_info['link'], headers=config.headers)
-    soup = BeautifulSoup(pageTree.content, 'html.parser')
+    page = requests.get(club_info['link'], headers=config.headers)
+    soup = BeautifulSoup(page.content, 'lxml')
 
     # 2. Get club image url
     img_query = soup.find_all('div', {'class':'data-header__profile-container'})[0]
@@ -219,11 +228,11 @@ def process_df_clubs(df):
     club_info['past_results'] = (" ").join(results[-5:])
 
     # 6. Get next match info
-    page = 'https://www.transfermarkt.us/ceapi/nextMatches/team/' + club_info['id']
-    pageTree = requests.get(page, headers=config.headers)
+    next_matches_site = 'https://www.transfermarkt.us/ceapi/nextMatches/team/' + club_info['id']
+    page = requests.get(next_matches_site, headers=config.headers)
 
-    teams = pageTree.json()['teams']
-    next_matches = pageTree.json()['matches']
+    teams = page.json()['teams']
+    next_matches = page.json()['matches']
 
     club_info['next_match_timestamp'] = ""
     club_info['next_match_opponent_name'] = ""

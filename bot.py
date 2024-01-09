@@ -103,7 +103,7 @@ async def get_player(ctx, *, command_args=''):
 async def get_club(ctx, *, command_args=''):
     # Convert args into searchable transfermarkt query
     # Obtain dataframe of results
-    df = scrape.process_club(command_args)
+    df = scrape.search_club(command_args)
 
     # Process dataframe, check if there are no results, only one result, or multiple results
     def process_and_display_df_clubs(df):
