@@ -38,16 +38,16 @@ The Discord Bot provides descriptive error handling features/messages to ensure 
 
 Error message when the user has provided an invalid player/club name:
 
-<img src="images/command_9.png" width="45%" height="45%" />
+<img src="images/command_9.png" width="60%" height="60%" />
 
 Option for user to specify the correct player/club, when given multiple results:
 
-<img src="images/command_6.png" width="45%" height="45%" />
+<img src="images/command_6.png" width="60%" height="60%" />
 
 Error message when user has initiated an action but failed to provide a response:
 
-<img src="images/command_7.png" width="45%" height="45%" />
+<img src="images/command_7.png" width="60%" height="60%" />
 
 Error message when user has provided an invalid/incorrect response:
 
-<img src="images/command_8.png" width="45%" height="45%" />
+<img src="images/command_8.png" width="60%" height="60%" />
