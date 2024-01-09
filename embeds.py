@@ -83,7 +83,7 @@ def display_player(player_data, player_stats_json, player_rumors):
     embed.set_thumbnail(url = player_data['image_url'])
 
     # 1. Display player club data
-    club = f"[{player_data['club']}]({config.transermarkt_mainpage + player_data['clublink']})"
+    club = f"[{player_data['club']}]({config.tm_main + player_data['clublink']})"
     embed.add_field(name='Current Club', value = club, inline=True)
     
     # 2. Display player position data
@@ -170,7 +170,7 @@ def display_club(club_info, df):
     embed.set_thumbnail(url = club_info['image_url'])
 
     # Add League \
-    league = f"[{club_info['league']}]({config.transermarkt_mainpage + club_info['league_link']})"
+    league = f"[{club_info['league']}]({config.tm_main + club_info['league_link']})"
     embed.add_field(name='League', value = league, inline=False)
 
     # Add Table Position

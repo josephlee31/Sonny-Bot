@@ -14,49 +14,29 @@ def search_player(command_args):
         results_df (df): pandas df of resulting player name, age, club, position, and link
     """
     # Process command_args string
-    name_query = config.transermarkt_query + '+'.join(command_args.split())
+    name_query = config.tm_search + '+'.join(command_args.split())
 
     # Initialize empty lists for names, clubs, positions, ages, and Transfermarkt links
-    p_names, p_clubs, p_positions, p_ages, p_links = [], [], [], [], []
+    p_names, p_clubs, p_positions, p_links = [], [], [], []
 
     # Parse through HTML data
     pageTree = requests.get(name_query, headers=config.headers)
     soup = BeautifulSoup(pageTree.content, 'html.parser')
 
-    for x in soup.find_all('tr', {'class':['even', 'odd']}):
-        player_info = x.find_all('td')
-
-        # Parse Transfermarkt link and player name
-        if player_info[2].find_all('a'):
-            link = str(player_info[2].find_all('a')[0].get('href'))
-            name = str(player_info[2].find_all('a')[0].get('title'))
-
-            # Confirm we have the information of a "player", not a manager or agent
-            if "spieler" in link:
-                # Extract names and Transfermarkt links
-                p_links.append(link)
-                p_names.append(name)
-
-                # Parse club information
-                # Check if player is retired
-                if "Retired" in str(player_info[3]):
-                    p_clubs.append("Retired")
-
-                else:
-                    club = str(player_info[3].find_all('a')[0].get('title'))
-                    p_clubs.append(club)
-
-                # Obtain position data
-                position = player_info[4].get_text(strip=True)
-                p_positions.append(position)
-
-                # Obtain age data
-                age = player_info[6].get_text(strip=True)
-                p_ages.append(age)
+    for result in soup.find_all('tr', {'class':['even', 'odd']}):
+        # Remove managers or trainers from search
+        if 'spieler' in result.find_all('a')[1].get('href'):
+            # Check if player is retired. If so, not included in list.
+            if result.find_all('td')[3].get_text() in ["Retired", "---"]:
+                continue
+            else:
+                p_names.append(result.find_all('td')[2].get_text())
+                p_clubs.append(result.find_all('td')[3].get_text())
+                p_positions.append(result.find_all('td')[4].get_text())
+                p_links.append(result.find_all('a')[1].get('href'))
 
     # Complete dataframe
     cols = {'Name': p_names,
-            'Age': p_ages,
             'Club': p_clubs,
             'Position': p_positions,
             'Link': p_links}
@@ -82,7 +62,7 @@ def process_df(df):
 
     for col in df.columns:
         if col == 'Link':
-            player_info[col.lower()] = config.transermarkt_mainpage + df.loc[0][col]
+            player_info[col.lower()] = config.tm_main + df.loc[0][col]
         # More specific position information will be retrieved later
         elif col == 'Position':
             pass
@@ -172,7 +152,7 @@ def get_stats(player_info):
 
 # Below function converts command argument into searchable transfermarkt query. 
 def process_club(command_args):
-    name_query = config.transermarkt_query + '+'.join(command_args.split())
+    name_query = config.tm_search + '+'.join(command_args.split())
 
     # Perform the scrape, obtain HTML data in soup
     pageTree = requests.get(name_query, headers=config.headers)
@@ -186,7 +166,7 @@ def process_club(command_args):
         if x.find_all('a'):
             if 'startseite' in x.find_all('a')[0].get('href'):
                 c_name.append(x.find_all('a')[0].get('title'))
-                c_club_link.append(config.transermarkt_mainpage + x.find_all('a')[0].get('href'))
+                c_club_link.append(config.tm_main + x.find_all('a')[0].get('href'))
 
     # Complete dataframe
     cols = {'Club': c_name, 'Club Link': c_club_link}
