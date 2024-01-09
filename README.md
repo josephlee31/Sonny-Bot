@@ -16,12 +16,9 @@ By using the command `!player [player_name]`, such as `!player Erling Haaland`, 
 * Transfer Rumors around the Player
 * ... and more!
   
-<img src="images/command_1.png" width="60%" height="60%" />
-<img src="images/command_2.png" width="60%" height="60%" />
-<img src="images/command_4.png" width="60%" height="60%" />
-
-Sonny Bot can also show information for players who are currently without a contract: 
-<img src="images/command_3.png" width="40%" height="40%" />
+<img src="images/command_1.png" width="50%" height="50%" />
+<img src="images/command_2.png" width="50%" height="50%" />
+<img src="images/command_4.png" width="50%" height="50%" />
 
 ### Search Club Information and Stats
 By using the command `!club [club_name]`, such as `!club Manchester City`, the user can see information such as:
