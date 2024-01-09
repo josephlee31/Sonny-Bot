@@ -31,7 +31,7 @@ By using the command `!club [club_name]`, such as `!club Manchester City`, the u
 * Club's Future Opponents and Matchtime
 * Club's Domestic League Form (As per their last 5 matches)
 
-<img src="images/command_5.png" width="45%" height="45%" />
+<img src="images/command_5.png" width="60%" height="60%" />
 
 ### Error Handling
 The Discord Bot provides descriptive error handling features/messages to ensure users utilize the Bot correctly. This includes:
